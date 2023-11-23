@@ -3,18 +3,17 @@
 ARG NODE_VERSION=14
 FROM node:${NODE_VERSION}
 ARG NODE_ENV
-ENV NODE_ENV=${NODE_ENV:-development}
+ENV NODE_ENV=${NODE_ENV:-production}
 
 WORKDIR /usr/src/app
-RUN --mount=type=bind,source=package.json,target=package.json \
-    --mount=type=bind,source=yarn.lock,target=yarn.lock \
-    --mount=type=cache,target=/root/.yarn \
-    yarn install --production --frozen-lockfile
 
-RUN --mount=type=bind,source=client/package.json,target=client/package.json \
-    --mount=type=bind,source=client/package-lock.json,target=client/package-lock.json \
-    --mount=type=cache,target=/root/.npm \
-    npm ci --prefix client --omit=dev
+COPY client/package.json client/package.json
+COPY client/package-lock.json client/package-lock.json
+RUN npm ci --prefix client --omit=dev
+
+COPY package.json ./package.json
+COPY yarn.lock ./yarn.lock
+RUN yarn install --production --frozen-lockfile
 
 COPY . .
 RUN npm run --prefix client build
