@@ -1,3 +1,4 @@
+const assert = (x, ...args) => (require("assert")(x, ...args), x);
 require("dotenv").config();
 
 //* Database
@@ -20,7 +21,7 @@ app.use(
   require("helmet")(), // collection of security settings
   require("cookie-session")({
     name: "styxsess",
-    secret: process.env.SESSION_SECRET,
+    secret: assert(process.env.SESSION_SECRET, "missing necessary env var"),
     maxAge: 1000 * 60 * 60 * 24, // 1day = 1000ms, 60sec, 60min, 24hr
     httpOnly: true,
     // secure: true, //! cant, requires https?
@@ -30,9 +31,9 @@ app.use(
 );
 
 // Serve up static assets (usually on heroku)
-// if (process.env.NODE_ENV === "production") {
-//   app.use(express.static("client/build"));
-// }
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static("client/build"));
+}
 
 //* Sockets Config
 const io = require("socket.io")(server);
